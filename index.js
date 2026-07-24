@@ -1,5 +1,5 @@
 import 'dotenv/config';
-import { Client, GatewayIntentBits } from 'discord.js';
+import { Client, GatewayIntentBits, EmbedBuilder } from 'discord.js';
 import { joinVoiceChannel } from '@discordjs/voice';
 
 const client = new Client({
@@ -41,13 +41,37 @@ client.on("messageCreate", async (msg) => {
     await msg.channel.send("https://i.imgur.com/h4YiTP8.gif");
   }
 
-  if (t === "قوانين") {
-    await msg.channel.send("https://example.com/rules.png");
+  if (t === "قوانين" && msg.channel.id === "1356618087448838186") {
+
+    const embed = new EmbedBuilder()
+      .setColor("#b388ff")
+      .setTitle("📜 قوانين سيرفر Nona Gaming")
+      .setDescription(`
+⚜️ احترام جميع الأعضاء والإدارة.
+
+⚜️ يمنع السب أو الإهانة أو التنمر.
+
+⚜️ يمنع السبام أو الإزعاج.
+
+⚜️ يمنع نشر الروابط أو الإعلانات بدون إذن.
+
+⚜️ يمنع المحتوى المخالف.
+
+⚜️ يمنع انتحال شخصية أي عضو أو إداري.
+
+⚜️ الالتزام بتعليمات الإدارة.
+
+💜 نتمنى لكم وقتًا ممتعًا في السيرفر.
+      `)
+      .setImage("https://cdn.discordapp.com/attachments/1524872875419631797/1530176388517204131/7F737853-220F-47DD-9798-221E53AD9C06.gif")
+      .setFooter({ text: "Nona Gaming" })
+      .setTimestamp();
+
+    await msg.channel.send({ embeds: [embed] });
   }
 });
 
 client.on("guildMemberUpdate", async (oldMember, newMember) => {
-  // إذا العضو عمل Boost جديد
   if (!oldMember.premiumSince && newMember.premiumSince) {
 
     const channel = newMember.guild.channels.cache.get("1530166492530868234");
