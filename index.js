@@ -121,7 +121,7 @@ client.on("messageCreate", async (msg) => {
   timestamps.push(now);
 
   // 8 رسائل خلال 5 ثواني
-  if (timestamps.length >= 8) {
+ if (timestamps.length >= 5) {
 
     spamMap.delete(userId);
 
