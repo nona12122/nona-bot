@@ -1,6 +1,10 @@
 {
-  "name":"nona-bot",
-  "version":"1.0.0",
-  "type":"module",
-  "dependencies":{"discord.js":"^14.21.0","dotenv":"^16.6.1"}
+  "name": "nona-bot",
+  "version": "1.0.0",
+  "type": "module",
+  "dependencies": {
+    "discord.js": "^14.21.0",
+    "dotenv": "^16.6.1",
+    "@discordjs/voice": "^0.18.0"
+  }
 }
