@@ -14,7 +14,7 @@ import {
 } from "discord.js";
 
 import { joinVoiceChannel } from '@discordjs/voice';
-
+import fs from "fs";
 const client = new Client({
   intents: [
     GatewayIntentBits.Guilds,
@@ -230,11 +230,16 @@ client.on("guildMemberUpdate", async (oldMember, newMember) => {
 
     if (!channel) return;
 
-    await channel.send(
-      `⚜️ شكراً على البوست يا كبيرها ${newMember} ⚜️
-
-https://cdn.discordapp.com/attachments/1524872875419631797/1530165667733442611/7E3F96DC-3FCA-41D2-958F-9599ED2E9BE3.gif`
-    );
+    await channel.send({
+      content: `╭・💎・شكراً على الدعم
+│
+│ 👑 ${newMember}
+│ شكراً لك على دعمك لسيرفر Nona Gaming.
+│ وجودك ودعمك يعني لنا الكثير. 💜
+│
+╰・⚜️ استمتع بمميزات الداعم.`,
+    files: ["./boost.gif"]
+    });
 
   }
 
@@ -271,14 +276,17 @@ client.on("interactionCreate", async (interaction) => {
 if (interaction.customId === "close_ticket") {
 
   await interaction.reply({
-    content: "🔒 سيتم حذف التذكرة بعد 5 ثوانٍ...",
-    ephemeral: true
-  });
+  content: "🔒 سيتم حذف التذكرة بعد 5 ثوانٍ...",
+  ephemeral: true
+});
 
-  setTimeout(async () => {
-    await interaction.channel.delete().catch(() => {});
-  }, 5000);
+const channel = interaction.channel;
 
+setTimeout(async () => {
+  if (!channel) return;
+
+  await channel.delete().catch(console.error);
+}, 5000);
   return;
 }
   }
