@@ -121,11 +121,11 @@ client.on("messageCreate", async (msg) => {
 
   // رسالة نونا
   if (t === "نونا") {
-    await msg.channel.send("أثري في الغياب يفوق حضور الكثيرين.");
-    return await msg.channel.send(
-      "https://i.imgur.com/h4YiTP8.gif"
-    );
-  }
+  await msg.channel.send("<@744348080865935491>\n\nمتـل حـكايـات الخيـال، لـكن انتي حقيـقه💎");
+  return await msg.channel.send(
+    "https://i.imgur.com/h4YiTP8.gif"
+  );
+}
 
   // قوانين الإدارة
   if (
