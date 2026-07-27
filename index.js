@@ -29,9 +29,9 @@ const VOICE_CHANNEL_ID = "1372931441821880382";
 const RULES_CHANNEL = "1356618087448838186";
 const BOOST_CHANNEL = "1530166492530868234";
 
-const ADMIN_ROLE = "1530170505070645369";
+const ADMIN_ROLE = "1531257074321981491";
 const PROTECTION_ROLE = "1530179158494150779";
-
+const LINK_ROLE = "1531256998065340621";
 const TICKET_CHANNEL = "1395770753462308944";
 const TICKET_CATEGORY = "1458644428162990263";
 const TICKET_ADMIN_ROLE = "1473678075987230772";
@@ -161,28 +161,27 @@ client.on("messageCreate", async (msg) => {
     return msg.channel.send({ embeds: [embed] });
   }
 
-  // استثناء الإدارة والحماية
-  if (
-    msg.member.roles.cache.has(ADMIN_ROLE) ||
-    msg.member.roles.cache.has(PROTECTION_ROLE)
-  ) return;
+ // استثناء الإدارة والحماية
+if (
+  msg.member.roles.cache.has(ADMIN_ROLE) ||
+  msg.member.roles.cache.has(LINK_ROLE)
+) return;
 
-  // Anti Link
-  const regex = /(https?:\/\/|discord\.gg|www\.)/i;
+// Anti Link
+const regex = /(https?:\/\/|discord\.gg|www\.)/i;
 
-  if (regex.test(msg.content)) {
+if (regex.test(msg.content)) {
+  await msg.delete().catch(() => {});
 
-    await msg.delete().catch(() => {});
+  await msg.channel.send({
+    content: `🚫 ${msg.author} يمنع إرسال الروابط داخل السيرفر.`
+  });
 
-    await msg.channel.send({
-      content: `🚫 ${msg.author} يمنع إرسال الروابط داخل السيرفر.`
-    });
-
-    return msg.member.timeout(
-      5 * 60 * 1000,
-      "Links Protection"
-    ).catch(() => {});
-  }
+  return msg.member.timeout(
+    5 * 60 * 1000,
+    "Links Protection"
+  ).catch(() => {});
+}
 
   // Anti Spam
   const id = msg.author.id;
@@ -197,7 +196,7 @@ client.on("messageCreate", async (msg) => {
     data.shift();
 
   data.push(now);
-
+if (msg.member.roles.cache.has(PROTECTION_ROLE)) return;
   if (data.length >= 5) {
 
     spamMap.delete(id);
