@@ -15,6 +15,17 @@ import {
 
 import { joinVoiceChannel } from '@discordjs/voice';
 import fs from "fs";
+const statsFile = "./stats.json";
+
+let stats = {};
+
+if (fs.existsSync(statsFile)) {
+  stats = JSON.parse(fs.readFileSync(statsFile, "utf8"));
+}
+
+function saveStats() {
+  fs.writeFileSync(statsFile, JSON.stringify(stats, null, 2));
+}
 const client = new Client({
   intents: [
     GatewayIntentBits.Guilds,
@@ -60,7 +71,7 @@ const ticketTypes = {
 };
 
 const spamMap = new Map();
-
+const voiceJoin = new Map();
 client.once("ready", async () => {
 
   console.log(`Logged in as ${client.user.tag}`);
@@ -116,9 +127,239 @@ client.on("messageCreate", async (msg) => {
   if (msg.author.bot || !msg.guild) return;
 
   const t = msg.content.trim();
+// ==========================
+// عداد الرسائل
+// ==========================
 
+if (!stats[msg.author.id]) {
+    stats[msg.author.id] = {
+        messages: 0,
+        voice: 0
+    };
+}
+
+stats[msg.author.id].messages++;
+saveStats();
   console.log("Message Event:", msg.id, msg.content);
+  const adminCommands = [
+  "تسكير",
+  "فتح",
+  "مسح",
+  "حظر",
+  "طرد",
+  "كتم",
+  "فك",
+  "تحذير",
+  "إعلان",
+  "رول",
+  "سحبرول"
+];
 
+if (
+  adminCommands.some(cmd => t.startsWith(cmd)) &&
+  !msg.member.roles.cache.has(ADMIN_ROLE)
+) {
+  return msg.reply("❌ هذا الأمر للإدارة فقط.");
+}
+// ==========================
+// أوامر الإدارة
+// ==========================
+
+// تسكير
+if (t === "تسكير") {
+    console.log(msg.channel.permissionOverwrites.cache.map(x => x.id));
+
+    await msg.channel.permissionOverwrites.edit(
+        msg.guild.id,
+        {
+            SendMessages: false
+        }
+    );
+
+    return msg.reply("تم");
+}
+// فتح
+if (t === "فتح") {
+  
+
+  await msg.channel.permissionOverwrites.edit(msg.guild.roles.everyone, {
+    SendMessages: true,
+  });
+
+  return msg.reply("🔓 تم فتح الروم.");
+}
+
+// مسح
+if (t.startsWith("مسح ")) {
+
+   
+
+    const amount = parseInt(t.split(" ")[1]);
+
+    if (isNaN(amount) || amount < 1 || amount > 100)
+        return msg.reply("استخدم: مسح 10");
+
+    await msg.delete().catch(() => {}); // حذف رسالة الأمر
+
+    const deleted = await msg.channel.bulkDelete(amount, true);
+
+    const m = await msg.channel.send(`✅ تم حذف ${deleted.size} رسالة.`);
+    setTimeout(() => m.delete().catch(() => {}), 2000);
+}
+if (t.startsWith("حظر ")) {
+
+    if (!msg.member.roles.cache.has(ADMIN_ROLE))
+        return msg.reply("❌ هذا الأمر للإدارة فقط.");
+
+    const member = msg.mentions.members.first();
+
+    if (!member)
+        return msg.reply("استخدم: حظر @العضو");
+
+    if (!member.bannable)
+        return msg.reply("❌ لا أستطيع حظر هذا العضو.");
+
+    await member.ban({ reason: `تم الحظر بواسطة ${msg.author.tag}` });
+
+    return msg.reply(`✅ تم حظر ${member.user.tag}`);
+}
+if (t.startsWith("طرد ")) {
+
+    if (!msg.member.roles.cache.has(ADMIN_ROLE))
+        return msg.reply("❌ هذا الأمر للإدارة فقط.");
+
+    const member = msg.mentions.members.first();
+
+    if (!member)
+        return msg.reply("استخدم: طرد @العضو");
+
+    if (!member.kickable)
+        return msg.reply("❌ لا أستطيع طرد هذا العضو.");
+
+    await member.kick(`تم الطرد بواسطة ${msg.author.tag}`);
+
+    return msg.reply(`✅ تم طرد ${member.user.tag}`);
+}
+if (t.startsWith("كتم ")) {
+
+    if (!msg.member.roles.cache.has(ADMIN_ROLE))
+        return msg.reply("❌ هذا الأمر للإدارة فقط.");
+
+    const member = msg.mentions.members.first();
+
+    if (!member)
+        return msg.reply("استخدم: كتم @العضو");
+
+    if (!member.moderatable)
+        return msg.reply("❌ لا أستطيع كتم هذا العضو.");
+
+    await member.timeout(10 * 60 * 1000, `تم الكتم بواسطة ${msg.author.tag}`);
+
+    return msg.reply(`🔇 تم كتم ${member.user.tag} لمدة 10 دقائق.`);
+}
+if (t.startsWith("فككتم ")) {
+
+    if (!msg.member.roles.cache.has(ADMIN_ROLE))
+        return msg.reply("❌ هذا الأمر للإدارة فقط.");
+
+    const member = msg.mentions.members.first();
+
+    if (!member)
+        return msg.reply("استخدم: فككتم @العضو");
+
+    if (!member.moderatable)
+        return msg.reply("❌ لا أستطيع فك كتم هذا العضو.");
+
+    await member.timeout(null, `تم فك الكتم بواسطة ${msg.author.tag}`);
+
+    return msg.reply(`🔊 تم فك كتم ${member.user.tag}`);
+}
+if (t.startsWith("تحذير ")) {
+
+    if (!msg.member.roles.cache.has(ADMIN_ROLE))
+        return msg.reply("❌ هذا الأمر للإدارة فقط.");
+
+    const member = msg.mentions.members.first();
+
+    if (!member)
+        return msg.reply("استخدم: تحذير @العضو السبب");
+
+    const args = t.split(" ");
+    args.shift(); // تحذير
+    args.shift(); // المنشن
+
+    const reason = args.join(" ") || "بدون سبب";
+
+    return msg.channel.send(
+        `⚠️ ${member}\nتم إعطاؤك تحذيراً.\n**السبب:** ${reason}`
+    );
+}
+if (t.startsWith("رول ")) {
+
+    if (!msg.member.roles.cache.has(ADMIN_ROLE))
+        return msg.reply("❌ هذا الأمر للإدارة فقط.");
+
+    const member = msg.mentions.members.first();
+    const role = msg.mentions.roles.first();
+
+    if (!member || !role)
+        return msg.reply("استخدم: رول @العضو @الرتبة");
+
+    if (member.roles.cache.has(role.id))
+        return msg.reply("❌ العضو يملك هذه الرتبة بالفعل.");
+
+    try {
+        await member.roles.add(role);
+        return msg.reply(`✅ تم إعطاء ${member.user.tag} رتبة ${role.name}`);
+    } catch {
+        return msg.reply("❌ لم أستطع إعطاء الرتبة.");
+    }
+}
+if (t.startsWith("سحبرول ")) {
+
+    if (!msg.member.roles.cache.has(ADMIN_ROLE))
+        return msg.reply("❌ هذا الأمر للإدارة فقط.");
+
+    const member = msg.mentions.members.first();
+    const role = msg.mentions.roles.first();
+
+    if (!member || !role)
+        return msg.reply("استخدم: سحبرول @العضو @الرتبة");
+
+    if (!member.roles.cache.has(role.id))
+        return msg.reply("❌ العضو لا يملك هذه الرتبة.");
+
+    try {
+        await member.roles.remove(role);
+        return msg.reply(`✅ تم سحب رتبة ${role.name} من ${member.user.tag}`);
+    } catch {
+        return msg.reply("❌ لم أستطع سحب الرتبة.");
+    }
+}
+if (t === "توب") {
+
+    const topMessages = Object.entries(stats)
+        .sort((a, b) => b[1].messages - a[1].messages)
+        .slice(0, 10);
+
+    const topVoice = Object.entries(stats)
+        .sort((a, b) => b[1].voice - a[1].voice)
+        .slice(0, 10);
+
+    let text = "🏆 **توب الرسائل**\n\n";
+
+    topMessages.forEach((x, i) => {
+        text += `${i + 1}. <@${x[0]}> — ${x[1].messages} رسالة\n`;
+    });
+
+    text += "\n🎤 **توب الصوت**\n\n";
+
+    topVoice.forEach((x, i) => {
+        text += `${i + 1}. <@${x[0]}> — ${x[1].voice} دقيقة\n`;
+    });
+
+    return msg.channel.send(text);
+}
   // رسالة نونا
   if (t === "نونا") {
   await msg.channel.send("<@744348080865935491>\n\nمتـل حـكايـات الخيـال، لـكن انتي حقيـقه💎");
@@ -456,5 +697,108 @@ client.on(Events.GuildMemberAdd, async (member) => {
 واستمتع بوقتك بيننا! ✨`,
  files: ["./commands/welcom.gif"]
 });
+});
+client.on("interactionCreate", async (interaction) => {
+  if (!interaction.isChatInputCommand()) return;
+
+  if (interaction.commandName === "البنق") {
+   await interaction.reply({
+  content: `🏓 ${client.ws.ping}ms`,
+  ephemeral: true
+});
+  }
+if (interaction.commandName === "حظر") {
+  const member = interaction.options.getMember("العضو");
+
+  if (!member) {
+    return interaction.reply({
+      content: "❌ العضو غير موجود.",
+      ephemeral: true
+    });
+  }
+
+  await member.ban();
+
+  return interaction.reply(`🔨 تم حظر ${member.user.tag}`);
+}
+
+if (interaction.commandName === "طرد") {
+  const member = interaction.options.getMember("العضو");
+
+  if (!member) {
+    return interaction.reply({
+      content: "❌ العضو غير موجود.",
+      ephemeral: true
+    });
+  }
+
+  await member.kick();
+
+  return interaction.reply(`👢 تم طرد ${member.user.tag}`);
+}
+
+if (interaction.commandName === "قفل") {
+  await interaction.channel.permissionOverwrites.edit(interaction.guild.roles.everyone, {
+    SendMessages: false
+  });
+
+  return interaction.reply("🔒 تم قفل الروم.");
+}
+
+if (interaction.commandName === "فتح") {
+  await interaction.channel.permissionOverwrites.edit(interaction.guild.roles.everyone, {
+    SendMessages: true
+  });
+
+  return interaction.reply("🔓 تم فتح الروم.");
+}
+  if (interaction.commandName === "مسح") {
+    if (!interaction.member.permissions.has(PermissionFlagsBits.ManageMessages)) {
+      return interaction.reply({
+        content: "❌ ليس لديك صلاحية.",
+        ephemeral: true
+      });
+    }
+
+    const amount = interaction.options.getInteger("العدد");
+
+    await interaction.channel.bulkDelete(amount, true);
+
+    return interaction.reply({
+      content: `✅ تم حذف ${amount} رسالة.`,
+      ephemeral: true
+    });
+  }
+});
+client.on("voiceStateUpdate", (oldState, newState) => {
+
+    const member = newState.member || oldState.member;
+    if (!member || member.user.bot) return;
+
+    // دخل روم صوتي
+    if (!oldState.channelId && newState.channelId) {
+        voiceJoin.set(member.id, Date.now());
+    }
+
+    // خرج من روم صوتي
+    if (oldState.channelId && !newState.channelId) {
+
+        const joined = voiceJoin.get(member.id);
+        if (!joined) return;
+
+        const minutes = Math.floor((Date.now() - joined) / 60000);
+
+        if (!stats[member.id]) {
+            stats[member.id] = {
+                messages: 0,
+                voice: 0
+            };
+        }
+
+        stats[member.id].voice += minutes;
+        saveStats();
+        voiceJoin.delete(member.id);
+    }
+
 });
 client.login(process.env.TOKEN);
