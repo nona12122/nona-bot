@@ -31,7 +31,8 @@ const client = new Client({
     GatewayIntentBits.Guilds,
     GatewayIntentBits.GuildMembers,
     GatewayIntentBits.GuildMessages,
-    GatewayIntentBits.MessageContent
+    GatewayIntentBits.MessageContent,
+    GatewayIntentBits.GuildVoiceStates
   ]
 });
 
@@ -49,7 +50,7 @@ const TICKET_ADMIN_ROLE = "1473678075987230772";
 
 const ticketTypes = {
   rank: {
-    name: "🏅 تقديم رتبة",
+    name: ":medal: تقديم للاداره",
     channel: "rank"
   },
   clan: {
@@ -337,7 +338,9 @@ if (t.startsWith("سحبرول ")) {
     }
 }
 if (t === "توب") {
-
+if (!msg.member.roles.cache.has(ADMIN_ROLE)) {
+    return msg.reply("❌ هذا الأمر للإدارة فقط.");
+}
     const topMessages = Object.entries(stats)
         .sort((a, b) => b[1].messages - a[1].messages)
         .slice(0, 10);
