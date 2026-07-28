@@ -775,36 +775,35 @@ if (interaction.commandName === "فتح") {
     });
   }
 });
-client.on("voiceStateUpdate", async (oldState, newState) => {
+// ==========================
+// Voice Counter
+// ==========================
 
+client.on("voiceStateUpdate", async (oldState, newState) => {
     const member = newState.member || oldState.member;
     if (!member || member.user.bot) return;
 
-    // دخل روم صوتي
     if (!oldState.channelId && newState.channelId) {
-        voiceJoin.set(member.id, Date.now());
+        voiceJoin.set(member.id, true);
     }
 
-    // خرج من روم صوتي
     if (oldState.channelId && !newState.channelId) {
+        voiceJoin.delete(member.id);
+    }
+});
 
-        const joined = voiceJoin.get(member.id);
-        if (!joined) return;
+// كل دقيقة
+setInterval(async () => {
+    for (const [userId] of voiceJoin) {
 
-        const minutes = Math.floor((Date.now() - joined) / 60000);
-
-        await ensureUser(member.id);
+        await ensureUser(userId);
 
         await db.query(
             `UPDATE stats
-             SET voice = voice + $1
-             WHERE user_id = $2`,
-            [minutes, member.id]
+             SET voice = voice + 1
+             WHERE user_id = $1`,
+            [userId]
         );
-
-        voiceJoin.delete(member.id);
     }
-
-});
-
+}, 60000);
 client.login(process.env.TOKEN);
