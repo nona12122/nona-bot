@@ -15,6 +15,7 @@ import {
 
 import { joinVoiceChannel } from '@discordjs/voice';
 import fs from "fs";
+import { db, initDatabase } from "./database.js";
 const statsFile = "./stats.json";
 
 let stats = {};
@@ -76,7 +77,7 @@ const voiceJoin = new Map();
 client.once("ready", async () => {
 
   console.log(`Logged in as ${client.user.tag}`);
-
+await initDatabase();
   const guild = client.guilds.cache.get(GUILD_ID);
 
   if (!guild) return;
