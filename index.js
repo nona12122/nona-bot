@@ -12,21 +12,8 @@ import {
   PermissionFlagsBits,
   Events
 } from "discord.js";
-
-import { joinVoiceChannel } from '@discordjs/voice';
-import fs from "fs";
+import { joinVoiceChannel } from "@discordjs/voice";
 import { db, initDatabase } from "./database.js";
-const statsFile = "./stats.json";
-
-let stats = {};
-
-if (fs.existsSync(statsFile)) {
-  stats = JSON.parse(fs.readFileSync(statsFile, "utf8"));
-}
-
-function saveStats() {
-  fs.writeFileSync(statsFile, JSON.stringify(stats, null, 2));
-}
 const client = new Client({
   intents: [
     GatewayIntentBits.Guilds,
@@ -74,6 +61,14 @@ const ticketTypes = {
 
 const spamMap = new Map();
 const voiceJoin = new Map();
+async function ensureUser(userId) {
+  await db.query(
+    `INSERT INTO stats (user_id)
+     VALUES ($1)
+     ON CONFLICT (user_id) DO NOTHING`,
+    [userId]
+  );
+}
 client.once("ready", async () => {
 
   console.log(`Logged in as ${client.user.tag}`);
@@ -133,15 +128,14 @@ client.on("messageCreate", async (msg) => {
 // عداد الرسائل
 // ==========================
 
-if (!stats[msg.author.id]) {
-    stats[msg.author.id] = {
-        messages: 0,
-        voice: 0
-    };
-}
+await ensureUser(msg.author.id);
 
-stats[msg.author.id].messages++;
-saveStats();
+await db.query(
+  `UPDATE stats
+   SET messages = messages + 1
+   WHERE user_id = $1`,
+  [msg.author.id]
+);
   console.log("Message Event:", msg.id, msg.content);
   const adminCommands = [
   "تسكير",
@@ -339,30 +333,37 @@ if (t.startsWith("سحبرول ")) {
     }
 }
 if (t === "توب") {
-if (!msg.member.roles.cache.has(ADMIN_ROLE)) {
+  if (!msg.member.roles.cache.has(ADMIN_ROLE)) {
     return msg.reply("❌ هذا الأمر للإدارة فقط.");
-}
-    const topMessages = Object.entries(stats)
-        .sort((a, b) => b[1].messages - a[1].messages)
-        .slice(0, 10);
+  }
 
-    const topVoice = Object.entries(stats)
-        .sort((a, b) => b[1].voice - a[1].voice)
-        .slice(0, 10);
+  const topMessages = await db.query(`
+    SELECT user_id, messages
+    FROM stats
+    ORDER BY messages DESC
+    LIMIT 10
+  `);
 
-    let text = "🏆 **توب الرسائل**\n\n";
+  const topVoice = await db.query(`
+    SELECT user_id, voice
+    FROM stats
+    ORDER BY voice DESC
+    LIMIT 10
+  `);
 
-    topMessages.forEach((x, i) => {
-        text += `${i + 1}. <@${x[0]}> — ${x[1].messages} رسالة\n`;
-    });
+  let text = "🏆 **توب الرسائل**\n\n";
 
-    text += "\n🎤 **توب الصوت**\n\n";
+  topMessages.rows.forEach((user, i) => {
+    text += `${i + 1}. <@${user.user_id}> — ${user.messages} رسالة\n`;
+  });
 
-    topVoice.forEach((x, i) => {
-        text += `${i + 1}. <@${x[0]}> — ${x[1].voice} دقيقة\n`;
-    });
+  text += "\n🎤 **توب الصوت**\n\n";
 
-    return msg.channel.send(text);
+  topVoice.rows.forEach((user, i) => {
+    text += `${i + 1}. <@${user.user_id}> — ${user.voice} دقيقة\n`;
+  });
+
+  return msg.channel.send(text);
 }
   // رسالة نونا
   if (t === "نونا") {
@@ -774,7 +775,7 @@ if (interaction.commandName === "فتح") {
     });
   }
 });
-client.on("voiceStateUpdate", (oldState, newState) => {
+client.on("voiceStateUpdate", async (oldState, newState) => {
 
     const member = newState.member || oldState.member;
     if (!member || member.user.bot) return;
@@ -792,17 +793,18 @@ client.on("voiceStateUpdate", (oldState, newState) => {
 
         const minutes = Math.floor((Date.now() - joined) / 60000);
 
-        if (!stats[member.id]) {
-            stats[member.id] = {
-                messages: 0,
-                voice: 0
-            };
-        }
+        await ensureUser(member.id);
 
-        stats[member.id].voice += minutes;
-        saveStats();
+        await db.query(
+            `UPDATE stats
+             SET voice = voice + $1
+             WHERE user_id = $2`,
+            [minutes, member.id]
+        );
+
         voiceJoin.delete(member.id);
     }
 
 });
+
 client.login(process.env.TOKEN);
