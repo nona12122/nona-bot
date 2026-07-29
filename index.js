@@ -124,6 +124,18 @@ client.on("messageCreate", async (msg) => {
   if (msg.author.bot || !msg.guild) return;
 
   const t = msg.content.trim();
+  if (t === "ليدر") {
+  await msg.channel.send({
+    content: `<@997261412881662064>
+
+ليشهد التاريخ أننا لم نعش سعداء .... بل عشنا رجال🖤`,
+    files: [
+      "./assets/تومااس شلبي.mp4"
+    ]
+  });
+
+  return;
+}
 // ==========================
 // عداد الرسائل
 // ==========================
