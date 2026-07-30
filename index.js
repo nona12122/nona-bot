@@ -1,8 +1,8 @@
-import 'dotenv/config';
 import {
   Client,
   GatewayIntentBits,
   EmbedBuilder,
+  AttachmentBuilder,
   PermissionsBitField,
   ActionRowBuilder,
   ButtonBuilder,
@@ -13,6 +13,7 @@ import {
   Events
 } from "discord.js";
 import { joinVoiceChannel } from "@discordjs/voice";
+import Canvas from "canvas";
 import { db, initDatabase } from "./database.js";
 const client = new Client({
   intents: [
