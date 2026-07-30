@@ -748,13 +748,49 @@ const closeButton = new ActionRowBuilder().addComponents(
 
 client.on(Events.GuildMemberAdd, async (member) => {
   console.log("🔥 عضو جديد دخل:", member.user.tag);
-  const channel = member.guild.channels.cache.get("1356618087448838186");
 
+  const channel = member.guild.channels.cache.get("1356618087448838186");
   if (!channel) return;
 
- const embed = new EmbedBuilder()
-  .setColor("#c8a96a")
-  .setDescription(`
+  // إنشاء الصورة
+  const canvas = Canvas.createCanvas(1536, 1024);
+  const ctx = canvas.getContext("2d");
+
+  // الخلفية
+  const background = await Canvas.loadImage("./images/welcome.png");
+  ctx.drawImage(background, 0, 0, canvas.width, canvas.height);
+
+  // قص صورة العضو داخل الدائرة
+  ctx.save();
+  ctx.beginPath();
+  ctx.arc(1120, 512, 192, 0, Math.PI * 2);
+  ctx.closePath();
+  ctx.clip();
+
+  const avatar = await Canvas.loadImage(
+    member.user.displayAvatarURL({
+      extension: "png",
+      size: 512,
+    })
+  );
+
+  ctx.drawImage(
+    avatar,
+    1120 - 192,
+    512 - 192,
+    384,
+    384
+  );
+
+  ctx.restore();
+
+  const attachment = new AttachmentBuilder(canvas.toBuffer("image/png"), {
+    name: "welcome.png",
+  });
+
+  const embed = new EmbedBuilder()
+    .setColor("#c8a96a")
+    .setDescription(`
 # 🏰 مرحبًا بك ${member}
 
 لقد فُتحت لك أبواب **𝒯𝒽𝑒 𝐿𝑜𝓈𝓉 𝒯𝑜𝓌𝓃**...
@@ -767,14 +803,14 @@ client.on(Events.GuildMemberAdd, async (member) => {
 
 ✨ نتمنى لك إقامة لا تُنسى في **𝒯𝒽𝑒 𝐿𝑜𝓈𝓉 𝒯𝑜𝓌𝓃**.
 `)
-  .setImage("attachment://welcome.png")
-  .setFooter({ text: "𝒯𝒽𝑒 𝐿𝑜𝓈𝓉 𝒯𝑜𝓌𝓃" })
-  .setTimestamp();
+    .setImage("attachment://welcome.png")
+    .setFooter({ text: "𝒯𝒽𝑒 𝐿𝑜𝓈𝓉 𝒯𝑜𝓌𝓃" })
+    .setTimestamp();
 
-await channel.send({
-  embeds: [embed],
-  files: ["./images/welcome.png"]
-});
+  await channel.send({
+    embeds: [embed],
+    files: [attachment],
+  });
 });
 client.on("interactionCreate", async (interaction) => {
   if (!interaction.isChatInputCommand()) return;
