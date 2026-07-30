@@ -750,7 +750,7 @@ const closeButton = new ActionRowBuilder().addComponents(
 client.on(Events.GuildMemberAdd, async (member) => {
   console.log("🔥 عضو جديد دخل:", member.user.tag);
 
-  const channel = member.guild.channels.cache.get("1356618087448838186");
+  const channel = member.guild.channels.cache.get("1532508729382273115");
   if (!channel) return;
 
   // إنشاء الصورة
@@ -764,7 +764,7 @@ client.on(Events.GuildMemberAdd, async (member) => {
   // قص صورة العضو داخل الدائرة
   ctx.save();
   ctx.beginPath();
-  ctx.arc(1120, 512, 192, 0, Math.PI * 2);
+  ctx.arc(1140, 512, 192, 0, Math.PI * 2);
   ctx.closePath();
   ctx.clip();
 
@@ -776,12 +776,12 @@ client.on(Events.GuildMemberAdd, async (member) => {
   );
 
   ctx.drawImage(
-    avatar,
-    1120 - 192,
-    512 - 192,
-    384,
-    384
-  );
+  avatar,
+  1140 - 192,
+  512 - 192,
+  384,
+  384
+);
 
   ctx.restore();
 
