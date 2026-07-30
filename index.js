@@ -122,7 +122,18 @@ await initDatabase();
 client.on("messageCreate", async (msg) => {
 
   if (msg.author.bot || !msg.guild) return;
-
+// ==========================
+// فاصل روم الخواطر
+// ==========================
+if (msg.author.bot) return;
+if (
+  msg.channel.id === "1531895771656359996" &&
+  msg.member.roles.cache.has("1532396497818091640")
+) {
+  await msg.channel.send({
+    files: ["./images/خواطر.png"]
+  });
+}
   const t = msg.content.trim();
   if (t === "ليدر") {
   await msg.channel.send({
