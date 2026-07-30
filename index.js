@@ -752,14 +752,28 @@ client.on(Events.GuildMemberAdd, async (member) => {
 
   if (!channel) return;
 
- await channel.send({
-  content: `# 🌸 أهلاً ${member}
+ const embed = new EmbedBuilder()
+  .setColor("#c8a96a")
+  .setDescription(`
+# 🏰 مرحبًا بك ${member}
 
-💛 نورت سيرفر نونا.
+لقد فُتحت لك أبواب **𝒯𝒽𝑒 𝐿𝑜𝓈𝓉 𝒯𝑜𝓌𝓃**...
 
-نتمنى لك إقامة سعيدة،
-واستمتع بوقتك بيننا! ✨`,
- files: ["./commands/welcom.gif"]
+مدينةٌ ضائعة يلفّها الغموض، وتروي جدرانها القديمة حكاياتٍ لم تُنسَ، ولا يعبر بواباتها إلا من كُتب له أن يصبح جزءًا منها.
+
+🗝️ أول خطوة في رحلتك هي قراءة <#1479831209629581362>.
+
+🌙 بعدها استكشف المدينة، كوّن صداقات جديدة، واستمتع بكل ما ينتظرك.
+
+✨ نتمنى لك إقامة لا تُنسى في **𝒯𝒽𝑒 𝐿𝑜𝓈𝓉 𝒯𝑜𝓌𝓃**.
+`)
+  .setImage("attachment://welcome.png")
+  .setFooter({ text: "𝒯𝒽𝑒 𝐿𝑜𝓈𝓉 𝒯𝑜𝓌𝓃" })
+  .setTimestamp();
+
+await channel.send({
+  embeds: [embed],
+  files: ["./images/welcome.png"]
 });
 });
 client.on("interactionCreate", async (interaction) => {
