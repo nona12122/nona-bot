@@ -750,9 +750,10 @@ const closeButton = new ActionRowBuilder().addComponents(
 client.on(Events.GuildMemberAdd, async (member) => {
   console.log("🔥 عضو جديد دخل:", member.user.tag);
 
-  const channel = member.guild.channels.cache.get("1532508729382273115");
-  if (!channel) return;
+  const welcomeChannel = member.guild.channels.cache.get("1532508729382273115");
+const generalChannel = member.guild.channels.cache.get("1356618087448838186");
 
+if (!welcomeChannel && !generalChannel) return;
   // إنشاء الصورة
   const canvas = Canvas.createCanvas(1536, 1024);
   const ctx = canvas.getContext("2d");
@@ -808,10 +809,19 @@ client.on(Events.GuildMemberAdd, async (member) => {
     .setFooter({ text: "𝒯𝒽𝑒 𝐿𝑜𝓈𝓉 𝒯𝑜𝓌𝓃" })
     .setTimestamp();
 
-  await channel.send({
+  if (welcomeChannel) {
+  await welcomeChannel.send({
     embeds: [embed],
     files: [attachment],
   });
+}
+
+if (generalChannel) {
+  await generalChannel.send({
+    embeds: [embed],
+    files: [attachment],
+  });
+}
 });
 client.on("interactionCreate", async (interaction) => {
   if (!interaction.isChatInputCommand()) return;
