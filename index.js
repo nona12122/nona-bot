@@ -120,7 +120,7 @@ await initDatabase();
 // ==========================
 
 client.on("messageCreate", async (msg) => {
-
+console.log(msg.channel.id, msg.member.roles.cache.map(r => r.id));
   if (msg.author.bot || !msg.guild) return;
 // ==========================
 // فاصل روم الخواطر
