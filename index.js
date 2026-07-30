@@ -132,7 +132,7 @@ if (
   msg.member &&
   msg.channel.id === "1531895771656359996" &&
   msg.member.roles.cache.has("1532396497818091640")
-)
+) {
   await msg.channel.send({
     files: ["./images/خواطر.png"]
   });
