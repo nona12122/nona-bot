@@ -120,16 +120,19 @@ await initDatabase();
 // ==========================
 
 client.on("messageCreate", async (msg) => {
-console.log(msg.channel.id, msg.member.roles.cache.map(r => r.id));
-  if (msg.author.bot || !msg.guild) return;
-// ==========================
-// فاصل روم الخواطر
-// ==========================
-if (msg.author.bot) return;
+    if (!msg.inGuild()) return;
+    if (!msg.member) return;
+    if (msg.author.bot) return;
+
+    // -------------------------
+    // فاصل روم الخواطر
+    // -------------------------
+
 if (
+  msg.member &&
   msg.channel.id === "1531895771656359996" &&
   msg.member.roles.cache.has("1532396497818091640")
-) {
+)
   await msg.channel.send({
     files: ["./images/خواطر.png"]
   });
