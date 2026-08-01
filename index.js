@@ -549,7 +549,7 @@ client.on("guildMemberUpdate", async (oldMember, newMember) => {
 ╭━━━━━━━━━━━━━୨⚜️୧━━━━━━━━━━━━━╮
         ✦ استمتع بجميع مميزات الداعم ✦
 ╰━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╯`,
-  files: ["./thanks.png"]
+  files: ["./images/thanks.png"]
 });
 
   }
