@@ -11,14 +11,20 @@ export const db = new Pool({
 
 export async function initDatabase() {
   await db.query(`
-    CREATE TABLE IF NOT EXISTS stats (
+   CREATE TABLE IF NOT EXISTS stats (
     user_id TEXT PRIMARY KEY,
     messages INTEGER DEFAULT 0,
     voice INTEGER DEFAULT 0,
     xp INTEGER DEFAULT 0,
     level INTEGER DEFAULT 1
-    );
+);
   `);
+await db.query(`
+ALTER TABLE stats
+ADD COLUMN IF NOT EXISTS xp INTEGER DEFAULT 0;
 
+ALTER TABLE stats
+ADD COLUMN IF NOT EXISTS level INTEGER DEFAULT 1;
+`);
   console.log("✅ Database Ready");
 }
