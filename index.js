@@ -124,7 +124,44 @@ client.on("messageCreate", async (msg) => {
     if (!msg.inGuild()) return;
     if (!msg.member) return;
     if (msg.author.bot) return;
+// نظام المستويات
+let user = await db.query(
+    "SELECT * FROM stats WHERE user_id = $1",
+    [msg.author.id]
+);
 
+if (user.rows.length === 0) {
+    await db.query(
+        "INSERT INTO stats (user_id) VALUES ($1)",
+        [msg.author.id]
+    );
+}
+
+let xpGain = Math.floor(Math.random() * 6) + 5;
+
+await db.query(
+    "UPDATE stats SET xp = xp + $1, messages = messages + 1 WHERE user_id = $2",
+    [xpGain, msg.author.id]
+);
+
+let data = await db.query(
+    "SELECT xp, level FROM stats WHERE user_id = $1",
+    [msg.author.id]
+);
+
+let xp = data.rows[0].xp;
+let level = data.rows[0].level;
+
+let newLevel = Math.floor(xp / 100) + 1;
+
+if (newLevel > level) {
+    await db.query(
+        "UPDATE stats SET level = $1 WHERE user_id = $2",
+        [newLevel, msg.author.id]
+    );
+
+    msg.channel.send(`🎉 مبروك <@${msg.author.id}> وصلت Level ${newLevel}!`);
+}
     // -------------------------
     // فاصل روم الخواطر
     // -------------------------
@@ -496,14 +533,16 @@ if (regex.test(msg.content)) {
   if (!spamMap.has(id))
     spamMap.set(id, []);
 
-  const data = spamMap.get(id);
+  
+const spamData = spamMap.get(id);
 
-  while (data.length && now - data[0] > 5000)
-    data.shift();
+while (spamData.length && now - spamData[0] > 5000) {
+    spamData.shift();
+}
 
-  data.push(now);
+spamData.push(now);
 if (msg.member.roles.cache.has(PROTECTION_ROLE)) return;
-  if (data.length >= 5) {
+  if (spamData.length > 5) {
 
     spamMap.delete(id);
 
