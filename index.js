@@ -126,13 +126,13 @@ client.on("messageCreate", async (msg) => {
     if (msg.author.bot) return;
     // ===== Level System =====
 
-let user = await db.query(
+let levelUser = await db.query(
     "SELECT * FROM stats WHERE user_id = $1",
     [msg.author.id]
 );
 
 // إنشاء عضو جديد في الداتا إذا أول مرة
-if (user.rows.length === 0) {
+if (levelUser.rows.length === 0) {
     await db.query(
         "INSERT INTO stats (user_id) VALUES ($1)",
         [msg.author.id]
@@ -189,7 +189,7 @@ let user = await db.query(
     [msg.author.id]
 );
 
-if (user.rows.length === 0) {
+if (levelUser.rows.length === 0) {
     await db.query(
         "INSERT INTO stats (user_id) VALUES ($1)",
         [msg.author.id]
