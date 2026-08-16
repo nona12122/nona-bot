@@ -124,6 +124,65 @@ client.on("messageCreate", async (msg) => {
     if (!msg.inGuild()) return;
     if (!msg.member) return;
     if (msg.author.bot) return;
+    // ===== Level System =====
+
+let user = await db.query(
+    "SELECT * FROM stats WHERE user_id = $1",
+    [msg.author.id]
+);
+
+// إنشاء عضو جديد في الداتا إذا أول مرة
+if (user.rows.length === 0) {
+    await db.query(
+        "INSERT INTO stats (user_id) VALUES ($1)",
+        [msg.author.id]
+    );
+}
+
+// XP عشوائي لكل رسالة
+let xpGain = Math.floor(Math.random() * 6) + 5;
+
+await db.query(
+    "UPDATE stats SET xp = xp + $1, messages = messages + 1 WHERE user_id = $2",
+    [xpGain, msg.author.id]
+);
+
+// جلب بيانات العضو
+let data = await db.query(
+    "SELECT xp, level FROM stats WHERE user_id = $1",
+    [msg.author.id]
+);
+
+let xp = data.rows[0].xp;
+let level = data.rows[0].level;
+
+// كل 100 XP = Level جديد
+let newLevel = Math.floor(xp / 100) + 1;
+
+// إذا ارتفع المستوى
+if (newLevel > level) {
+
+    await db.query(
+        "UPDATE stats SET level = $1 WHERE user_id = $2",
+        [newLevel, msg.author.id]
+    );
+
+    // شات الليفل
+    const LEVEL_CHANNEL = "1356625691118010469";
+
+    const levelChannel = msg.guild.channels.cache.get(LEVEL_CHANNEL);
+
+    if (levelChannel) {
+        levelChannel.send(
+`🌙✨ عضو جديد يقترب من القمة...
+
+<@${msg.author.id}> وصل إلى Level **${newLevel}** 🖤
+
+رحلتك في **The Lost** بدأت تكبر...
+هل أنت مستعد للمستوى القادم؟ 🔥`
+        );
+    }
+}
 // نظام المستويات
 let user = await db.query(
     "SELECT * FROM stats WHERE user_id = $1",
