@@ -157,8 +157,7 @@ let levelData = await db.query(
 
 let xp = levelData.rows[0].xp;
 let level = levelData.rows[0].level;
-let newLevel = Math.floor(Math.sqrt(xp / 100));
-
+let newLevel = Math.floor(xp / 375) + 1;
 
 // إذا ارتفع المستوى
 if (newLevel > level) {
@@ -174,7 +173,7 @@ if (newLevel > level) {
 
     if (levelChannel) {
         levelChannel.send(
-`🌙✨ عضو جديد يقترب من القمة...
+`✨ عضو جديد يقترب من القمة...
 
 <@${msg.author.id}> وصل إلى Level **${newLevel}** 🖤
 
